@@ -14,10 +14,13 @@ public class AimRaycast : MonoBehaviour
     private void Awake()
     {
         lineRenderer = GetComponent<LineRenderer>();
+        obstacleLayer = LayerMask.NameToLayer("Ground");
     }
 
     void Update()
     {
+        if (!gunTip) return;
+
         Vector3 mouseWorldPosition = Camera.main.ScreenToWorldPoint(new Vector3(Input.mousePosition.x, Input.mousePosition.y, gunTip.position.z - Camera.main.transform.position.z));
         Vector2 aimDirection = (mouseWorldPosition - gunTip.position).normalized;
         float distanceToMouse = Vector2.Distance(gunTip.position, mouseWorldPosition);
@@ -34,5 +37,10 @@ public class AimRaycast : MonoBehaviour
         {
             crosshair.transform.position = mouseWorldPosition;
         }
+    }
+
+    public void SetGunTip(Transform target)
+    {
+        gunTip = target;
     }
 }
