@@ -3,11 +3,13 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
-public class WeaponRotation : MonoBehaviourPunCallbacks
+public class WeaponRotation : MonoBehaviourPunCallbacks, IPunObservable
 {
     public PhotonView pv;
 
     private SpriteRenderer spriteRenderer;
+    private Quaternion localTargetRotation; // 로컬 플레이어의 회전 목표
+    private Quaternion networkTargetRotation; // 네트워크 플레이어의 회전 목표
 
     private void Awake()
     {
@@ -16,28 +18,35 @@ public class WeaponRotation : MonoBehaviourPunCallbacks
 
     private void Update()
     {
-        Vector3 mousePosition = Camera.main.ScreenToWorldPoint(Input.mousePosition);
-        mousePosition.z = 0;
-
-        Vector2 dir = mousePosition - transform.position;
-        float angle = Mathf.Atan2(dir.y, dir.x) * Mathf.Rad2Deg;
-
-        transform.rotation = Quaternion.Euler(new Vector3(0, 0, angle));
-
-        // 마우스 위치에 따라 flipX 및 gunTip의 위치 반전
-        if (mousePosition.x < transform.position.x)
+        if (pv.IsMine)
         {
-            pv.RPC("FlipYRPC", RpcTarget.AllBuffered, true);
-            //spriteRenderer.flipY = true;
-            pv.RPC("SortingOrderControl", RpcTarget.AllBuffered, 4);
-            spriteRenderer.sortingOrder = 4;
+            // 로컬 플레이어의 경우 마우스 위치 기반 회전 처리
+            Vector3 mousePosition = Camera.main.ScreenToWorldPoint(Input.mousePosition);
+            mousePosition.z = 0;
+
+            Vector2 dir = mousePosition - transform.position;
+            float angle = Mathf.Atan2(dir.y, dir.x) * Mathf.Rad2Deg;
+
+            localTargetRotation = Quaternion.Euler(new Vector3(0, 0, angle));
+            transform.rotation = localTargetRotation;
+
+            // 마우스 위치에 따라 flipX 및 gunTip의 위치 반전
+            if (mousePosition.x < transform.position.x)
+            {
+                pv.RPC("FlipYRPC", RpcTarget.AllBuffered, true);
+                pv.RPC("SortingOrderControl", RpcTarget.AllBuffered, 4);
+            }
+            else
+            {
+                pv.RPC("FlipYRPC", RpcTarget.AllBuffered, false);
+                //spriteRenderer.flipY = false;
+                pv.RPC("SortingOrderControl", RpcTarget.AllBuffered, 6);
+            }
         }
         else
         {
-            pv.RPC("FlipYRPC", RpcTarget.AllBuffered, false);
-            //spriteRenderer.flipY = false;
-            pv.RPC("SortingOrderControl", RpcTarget.AllBuffered, 6);
-            spriteRenderer.sortingOrder = 6;
+            // 네트워크 플레이어의 경우 부드러운 회전 적용
+            transform.rotation = Quaternion.Lerp(transform.rotation, networkTargetRotation, Time.deltaTime * 10f);
         }
     }
 
@@ -46,4 +55,19 @@ public class WeaponRotation : MonoBehaviourPunCallbacks
 
     [PunRPC]
     void SortingOrderControl(int x) => spriteRenderer.sortingOrder = x;
+
+    // OnPhotonSerializeView로 회전 값 동기화
+    public void OnPhotonSerializeView(PhotonStream stream, PhotonMessageInfo info)
+    {
+        if (stream.IsWriting)
+        {
+            // 로컬 플레이어: 회전 값 전송
+            stream.SendNext(localTargetRotation);
+        }
+        else
+        {
+            // 네트워크 플레이어: 회전 값 수신
+            networkTargetRotation = (Quaternion)stream.ReceiveNext();
+        }
+    }
 }
