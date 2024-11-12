@@ -11,7 +11,7 @@ public class Bullet : MonoBehaviourPunCallbacks
     [SerializeField]
     private float speed = 50f;
 
-    //private void Start() => Destroy(gameObject, 10f);
+    private void Start() => Invoke("Destroy", 10f);
 
     private void Update()
     {
@@ -32,8 +32,13 @@ public class Bullet : MonoBehaviourPunCallbacks
         }
     }
 
+    private void Destroy()
+    {
+        pv.RPC("DestroyRPC", RpcTarget.AllBuffered);
+    }
+
     [PunRPC]
-    void DirRPC(Vector3 dir) => this.dir = dir.normalized;
+    void DirRPC(Vector3 dir) => this.dir = dir;
 
     [PunRPC]
     void DestroyRPC() => Destroy(gameObject);

@@ -100,7 +100,7 @@ public class PlayerController : MonoBehaviourPunCallbacks, IPunObservable
     {
         Vector3 mousePosition = Camera.main.ScreenToWorldPoint(Input.mousePosition);
         mousePosition.z = 0;
-        Vector3 direction = (mousePosition - transform.position).normalized;
+        Vector3 direction = (mousePosition - gunTip.transform.position).normalized;
 
         Vector3 bulletSpawnPosition = gunTip.transform.position;
 
