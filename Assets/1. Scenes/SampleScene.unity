@@ -357,7 +357,7 @@ PrefabInstance:
     - target: {fileID: 3363247407011204989, guid: 3c2a4d3d06ea18344a38c4881e80ad46, type: 3}
       propertyPath: gunTip
       value: 
-      objectReference: {fileID: 1968843032}
+      objectReference: {fileID: 0}
     - target: {fileID: 3363247407011204989, guid: 3c2a4d3d06ea18344a38c4881e80ad46, type: 3}
       propertyPath: obstacleLayer.m_Bits
       value: 64
@@ -472,11 +472,6 @@ PrefabInstance:
     m_AddedGameObjects: []
     m_AddedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: 1820b204de47cf2459b10f091a20ed81, type: 3}
---- !u!4 &1968843032 stripped
-Transform:
-  m_CorrespondingSourceObject: {fileID: 2737659401520000888, guid: 68a7e0dbfd310a94dbc7b6d979d8d2a4, type: 3}
-  m_PrefabInstance: {fileID: 2548152131609992145}
-  m_PrefabAsset: {fileID: 0}
 --- !u!1001 &2548152131609992145
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -488,6 +483,14 @@ PrefabInstance:
     - target: {fileID: 3295857634236072962, guid: 68a7e0dbfd310a94dbc7b6d979d8d2a4, type: 3}
       propertyPath: m_Name
       value: Character1
+      objectReference: {fileID: 0}
+    - target: {fileID: 4290811431074722306, guid: 68a7e0dbfd310a94dbc7b6d979d8d2a4, type: 3}
+      propertyPath: sceneViewId
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 4758697680757369041, guid: 68a7e0dbfd310a94dbc7b6d979d8d2a4, type: 3}
+      propertyPath: sceneViewId
+      value: 2
       objectReference: {fileID: 0}
     - target: {fileID: 5532719072117018139, guid: 68a7e0dbfd310a94dbc7b6d979d8d2a4, type: 3}
       propertyPath: m_RootOrder
