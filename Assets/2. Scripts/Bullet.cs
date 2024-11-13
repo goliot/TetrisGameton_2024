@@ -25,9 +25,11 @@ public class Bullet : MonoBehaviourPunCallbacks
 
         // 맞는 쪽 입장에서 생각
         // 총알이 내꺼가 아니고, 그 총알이 플레이어에 닿았으며, 그 플레이어가 나일 때 호출하는것
-        if(!pv.IsMine && collision.tag == "Player" && collision.GetComponent<PhotonView>().IsMine) // 느린쪽에 맞춰 Hit 판정
+        if(collision.tag == "Player") // 느린쪽에 맞춰 Hit 판정
         {
-            collision.GetComponent<PlayerController>().Hit();
+            if(!pv.IsMine && collision.GetComponent<PhotonView>().IsMine)
+                collision.GetComponent<PlayerController>().Hit();
+
             pv.RPC("DestroyRPC", RpcTarget.AllBuffered);
         }
     }

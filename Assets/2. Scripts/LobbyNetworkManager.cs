@@ -42,7 +42,7 @@ public class LobbyNetworkManager : MonoBehaviourPunCallbacks
     {
         StatusText.text = PhotonNetwork.NetworkClientState.ToString();
         LobbyInfoText.text = (PhotonNetwork.CountOfPlayers - PhotonNetwork.CountOfPlayersInRooms) + "로비 / " + PhotonNetwork.CountOfPlayers + "접속";
-
+        GameStartBtn.gameObject.SetActive(PhotonNetwork.IsMasterClient); // 방장만 게임시작버튼 활성화
     }
 
     public void Connect() => PhotonNetwork.ConnectUsingSettings();
@@ -126,10 +126,17 @@ public class LobbyNetworkManager : MonoBehaviourPunCallbacks
 
     public void LeaveRoom() => PhotonNetwork.LeaveRoom();
 
+    public override void OnLeftRoom()
+    {
+        if(PhotonNetwork.IsMasterClient)
+        {
+            AssignNewMasterClient();
+        }
+    }
+
     public override void OnJoinedRoom()
     {
         RoomPanel.SetActive(true);
-        GameStartBtn.gameObject.SetActive(PhotonNetwork.IsMasterClient); // 방장만 게임시작버튼 활성화
         RoomRenewal();
         ChatInput.text = "";
         for (int i = 0; i < ChatText.Length; i++) ChatText[i].text = "";
@@ -149,6 +156,19 @@ public class LobbyNetworkManager : MonoBehaviourPunCallbacks
     {
         RoomRenewal();
         ChatRPC("<color=yellow>" + otherPlayer.NickName + "님이 퇴장하셨습니다</color>");
+    }
+
+    void AssignNewMasterClient()
+    {
+        List<Player> players = new List<Player>(PhotonNetwork.PlayerList);
+        if(players.Count > 0)
+        {
+            int rand = Random.Range(0, players.Count);
+            Player newMaster = players[rand];
+
+            PhotonNetwork.SetMasterClient(newMaster);
+            ChatRPC("<color=yellow>" + newMaster.NickName + "님이 새로운 방장이 되었습니다.</color>");
+        }
     }
 
     void RoomRenewal()
