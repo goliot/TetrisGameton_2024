@@ -6,7 +6,7 @@ using UnityEngine;
 using UnityEngine.UI;
 using HashTable = ExitGames.Client.Photon.Hashtable;
 
-public class NetworkManager : MonoBehaviourPunCallbacks
+public class GameNetworkManager : MonoBehaviourPunCallbacks
 {
     public InputField NicknameInput;
     public GameObject DisconnectPanel;
@@ -17,14 +17,29 @@ public class NetworkManager : MonoBehaviourPunCallbacks
         Screen.SetResolution(960, 540, false);
         PhotonNetwork.SendRate = 60;
         PhotonNetwork.SerializationRate = 30;
+        PhotonNetwork.AutomaticallySyncScene = true;
     }
 
-    public void Connect() => PhotonNetwork.ConnectUsingSettings();
+    private void Start()
+    {
+        if(PhotonNetwork.InRoom)
+        {
+            DisconnectPanel.SetActive(false);
+            Spawn();
+        }
+        else
+        {
+            Debug.LogWarning("Not in a room, reconnecting...");
+            PhotonNetwork.JoinOrCreateRoom("Room", new RoomOptions { MaxPlayers = 6 }, null);
+        }
+    }
+
+    //public void Connect() => PhotonNetwork.ConnectUsingSettings();
 
     /// <summary>
     /// ConnectUsingSettings 성공시 호출
     /// </summary>
-    public override void OnConnectedToMaster()
+    /*public override void OnConnectedToMaster()
     {
         RoomOptions roomOption = new RoomOptions();
         roomOption.MaxPlayers = 6;
@@ -32,7 +47,7 @@ public class NetworkManager : MonoBehaviourPunCallbacks
 
         PhotonNetwork.LocalPlayer.NickName = NicknameInput.text;
         PhotonNetwork.JoinOrCreateRoom("Room", roomOption, null);
-    }
+    }*/
 
     /// <summary>
     /// JoinOrCreateRoom 성공시 호출
