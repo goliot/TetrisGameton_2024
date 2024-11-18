@@ -184,6 +184,7 @@ MonoBehaviour:
   OwnershipTransfer: 0
   observableSearch: 1
   ObservedComponents:
+  - {fileID: 5278760029522488199}
   - {fileID: 4047664571384492242}
   sceneViewId: 0
   InstantiationId: 0
@@ -201,6 +202,8 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   pv: {fileID: 4290811431074722306}
+  recoilDistance: 0.3
+  recoilDuration: 0.05
 --- !u!114 &4047664571384492242
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -679,7 +682,7 @@ Rigidbody2D:
   m_Mass: 1
   m_LinearDrag: 0
   m_AngularDrag: 0.05
-  m_GravityScale: 2
+  m_GravityScale: 6
   m_Material: {fileID: 0}
   m_IncludeLayers:
     serializedVersion: 2
@@ -788,7 +791,10 @@ MonoBehaviour:
   fireEffect: {fileID: 6114113710036674726}
   capsuleCollider: {fileID: 5142998643245698901}
   gunTip: {fileID: 6502655841929288180}
+  gun: {fileID: 0}
   atkSpeed: 0.15
+  walkSpeed: 8
+  jumpPower: 1200
   aimLine: {fileID: 4078863461799173826}
 --- !u!114 &374265352101195051
 MonoBehaviour:

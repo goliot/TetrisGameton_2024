@@ -18,9 +18,12 @@ public class PlayerController : MonoBehaviourPunCallbacks, IPunObservable
     public GameObject fireEffect;
     public CapsuleCollider2D capsuleCollider;
     public Transform gunTip;
+    public GameObject gun;
 
     [Header("# Stats")]
     public float atkSpeed;
+    public float walkSpeed;
+    public float jumpPower;
 
     [SerializeField]
     private GameObject aimLine;
@@ -54,7 +57,7 @@ public class PlayerController : MonoBehaviourPunCallbacks, IPunObservable
         {
             // 이동
             float axis = Input.GetAxisRaw("Horizontal");
-            rb.velocity = new Vector2(4 * axis, rb.velocity.y);
+            rb.velocity = new Vector2(walkSpeed * axis, rb.velocity.y);
 
             if (axis != 0)
             {
@@ -76,7 +79,7 @@ public class PlayerController : MonoBehaviourPunCallbacks, IPunObservable
                 pv.RPC("JumpRPC", RpcTarget.All);
 
             // 공격
-            if (Input.GetMouseButtonDown(0) && atkTime > atkSpeed)
+            if (Input.GetMouseButtonDown(0))
             {
                 Shoot();
                 atkTime = 0f;
@@ -93,33 +96,51 @@ public class PlayerController : MonoBehaviourPunCallbacks, IPunObservable
     void JumpRPC()
     {
         rb.velocity = Vector2.zero;
-        rb.AddForce(Vector2.up * 700);
+        rb.AddForce(Vector2.up * jumpPower);
     }
 
     void Shoot()
     {
+        AudioManager.instance.PlaySfx(AudioManager.Sfx.BasicAtk);
         Vector3 mousePosition = Camera.main.ScreenToWorldPoint(Input.mousePosition);
         mousePosition.z = 0;
-        Vector3 direction = (mousePosition - gunTip.transform.position).normalized;
 
         Vector3 bulletSpawnPosition = gunTip.transform.position;
+        Vector3 direction = (mousePosition - bulletSpawnPosition).normalized;
 
-        PhotonNetwork.Instantiate("Bullet", bulletSpawnPosition, Quaternion.identity)
+        // 방향 벡터를 기반으로 Z축 회전 값 계산
+        float angle = Mathf.Atan2(direction.y, direction.x) * Mathf.Rad2Deg;
+
+        // Z축 기준 회전 설정
+        Quaternion rotation = Quaternion.Euler(0, 0, angle);
+
+        // 총알 생성 및 초기화
+        PhotonNetwork.Instantiate("Bullet", bulletSpawnPosition, rotation)
             .GetComponent<PhotonView>().RPC("DirRPC", RpcTarget.All, direction);
 
         if (CoShootEffect == null)
             CoShootEffect = StartCoroutine(ShootEffect());
     }
 
+
     IEnumerator ShootEffect()
     {
         fireEffect.SetActive(true);
 
-        yield return new WaitForSeconds(0.1f);
+        yield return new WaitForSeconds(0.05f);
 
         fireEffect.SetActive(false);
 
         CoShootEffect = null;
+    }
+
+    private void OnTriggerEnter2D(Collider2D collision)
+    {
+        if (collision.tag == "Boarder")
+        {
+            healthImage.fillAmount = 0;
+            Die();
+        }
     }
 
     public void Hit()
@@ -127,9 +148,14 @@ public class PlayerController : MonoBehaviourPunCallbacks, IPunObservable
         healthImage.fillAmount -= 0.1f;
         if (healthImage.fillAmount <= 0)
         {
-            GameObject.Find("Canvas").transform.Find("RespawnPanel").gameObject.SetActive(true);
-            pv.RPC("DestroyRPC", RpcTarget.AllBuffered);
+            Die();
         }
+    }
+
+    public void Die()
+    {
+        GameObject.Find("Canvas").transform.Find("RespawnPanel").gameObject.SetActive(true);
+        pv.RPC("DestroyRPC", RpcTarget.AllBuffered);
     }
 
     [PunRPC]

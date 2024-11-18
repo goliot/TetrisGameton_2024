@@ -6,6 +6,8 @@ TagManager:
   tags:
   - Bullet
   - Ground
+  - FxTemporaire
+  - Boarder
   layers:
   - Default
   - TransparentFX

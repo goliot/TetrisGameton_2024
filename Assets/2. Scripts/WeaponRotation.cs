@@ -2,7 +2,6 @@ using Photon.Pun;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
-
 public class WeaponRotation : MonoBehaviourPunCallbacks, IPunObservable
 {
     public PhotonView pv;
@@ -11,9 +10,16 @@ public class WeaponRotation : MonoBehaviourPunCallbacks, IPunObservable
     private Quaternion localTargetRotation; // 로컬 플레이어의 회전 목표
     private Quaternion networkTargetRotation; // 네트워크 플레이어의 회전 목표
 
+    [Header("Recoil Settings")]
+    public float recoilDistance = 0.2f; // 반동 거리
+    public float recoilDuration = 0.05f; // 반동 효과 지속 시간
+    private Vector3 originalPosition; // 총의 원래 위치
+    private Coroutine recoilCoroutine; // 현재 실행 중인 반동 코루틴
+
     private void Awake()
     {
         spriteRenderer = GetComponent<SpriteRenderer>();
+        originalPosition = transform.localPosition; // 초기 위치 저장
     }
 
     private void Update()
@@ -39,8 +45,13 @@ public class WeaponRotation : MonoBehaviourPunCallbacks, IPunObservable
             else
             {
                 pv.RPC("FlipYRPC", RpcTarget.AllBuffered, false);
-                //spriteRenderer.flipY = false;
                 pv.RPC("SortingOrderControl", RpcTarget.AllBuffered, 6);
+            }
+
+            // 발사 키 입력 시 반동 효과
+            if (Input.GetMouseButtonDown(0))
+            {
+                TriggerRecoil();
             }
         }
         else
@@ -69,5 +80,48 @@ public class WeaponRotation : MonoBehaviourPunCallbacks, IPunObservable
             // 네트워크 플레이어: 회전 값 수신
             networkTargetRotation = (Quaternion)stream.ReceiveNext();
         }
+    }
+
+    /// <summary>
+    /// 총기 반동 효과를 트리거
+    /// </summary>
+    private void TriggerRecoil()
+    {
+        // 이미 실행 중인 반동 코루틴이 있다면 중단
+        if (recoilCoroutine != null)
+            StopCoroutine(recoilCoroutine);
+
+        // 새로운 반동 효과 시작
+        recoilCoroutine = StartCoroutine(RecoilRoutine());
+    }
+
+    /// <summary>
+    /// 반동 효과 코루틴
+    /// </summary>
+    private IEnumerator RecoilRoutine()
+    {
+        Vector3 recoilPosition = originalPosition - transform.right * recoilDistance;
+
+        // 반동 위치로 이동
+        float elapsedTime = 0f;
+        while (elapsedTime < recoilDuration)
+        {
+            transform.localPosition = Vector3.Lerp(originalPosition, recoilPosition, elapsedTime / recoilDuration);
+            elapsedTime += Time.deltaTime;
+            yield return null;
+        }
+
+        // 원래 위치로 복귀
+        elapsedTime = 0f;
+        while (elapsedTime < recoilDuration)
+        {
+            transform.localPosition = Vector3.Lerp(recoilPosition, originalPosition, elapsedTime / recoilDuration);
+            elapsedTime += Time.deltaTime;
+            yield return null;
+        }
+
+        // 반동 효과 종료
+        transform.localPosition = originalPosition;
+        recoilCoroutine = null;
     }
 }
