@@ -155,6 +155,7 @@ public class PlayerController : MonoBehaviourPunCallbacks, IPunObservable
     public void Die()
     {
         GameObject.Find("Canvas").transform.Find("RespawnPanel").gameObject.SetActive(true);
+        UIManager.instance.DecreaseLife();
         pv.RPC("DestroyRPC", RpcTarget.AllBuffered);
     }
 

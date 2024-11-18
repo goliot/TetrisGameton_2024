@@ -795,6 +795,7 @@ MonoBehaviour:
   atkSpeed: 0.15
   walkSpeed: 8
   jumpPower: 1200
+  life: 8
   aimLine: {fileID: 4078863461799173826}
 --- !u!114 &374265352101195051
 MonoBehaviour:
